@@ -14,24 +14,32 @@ MQTT_PORT = 1883
 MQTT_TOPIC = "pmmg/1bpm/doc1"  # Tópico padrão
 MQTT_CLIENT_ID = "doca 1"
 
-# Simulação do GPIO (em um dispositivo real, você usaria RPi.GPIO)
-class GPIO:
-    def __init__(self):
-        self.led_state = False
-    
-    def setup(self, pin, mode):
-        print(f"Configurando pino {pin} como {mode}")
-    
-    def output(self, pin, state):
-        self.led_state = state
-        status = "LIGADO" if state else "DESLIGADO"
-        print(f"LED {status} (Pino {pin})")
-    
-    def cleanup(self):
-        print("Limpando GPIO")
+# Importar RPi.GPIO real
+import RPi.GPIO as GPIO
 
-# Instanciar GPIO
-gpio = GPIO()
+# Configurar GPIO
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+
+# Função para configurar GPIO
+def setup_gpio():
+    GPIO.setup(23, GPIO.OUT)  # Pino 16 (GPIO23)
+    GPIO.output(23, GPIO.LOW)  # Inicialmente desligado
+    print("GPIO configurado: Pino 16 (GPIO23)")
+
+# Função para controlar LED
+def control_led(state):
+    if state:
+        GPIO.output(23, GPIO.HIGH)
+        print("LED LIGADO (Pino 16)")
+    else:
+        GPIO.output(23, GPIO.LOW)
+        print("LED DESLIGADO (Pino 16)")
+
+# Função para limpar GPIO
+def cleanup_gpio():
+    GPIO.cleanup()
+    print("GPIO limpo!")
 
 def on_connect(client, userdata, flags, rc, properties=None):
     """Callback chamado quando conecta ao broker MQTT"""
@@ -57,19 +65,19 @@ def on_message(client, userdata, msg):
         # Processar a mensagem
         if message.lower() == "liberar":
             print(">>> COMANDO: LIBERAR DISPOSITIVO")
-            gpio.output(12, True)  # Ativar LED/GPIO no pino 12
+            control_led(True)  # Ativar LED/GPIO no pino 16 (GPIO23)
             print(">>> Dispositivo LIBERADO!")
         elif message.lower() == "bloquear":
             print(">>> COMANDO: BLOQUEAR DISPOSITIVO")
-            gpio.output(12, False)  # Desativar LED/GPIO no pino 12
+            control_led(False)  # Desativar LED/GPIO no pino 16 (GPIO23)
             print(">>> Dispositivo BLOQUEADO!")
         elif message.lower() == "ligar":
             print(">>> COMANDO: LIGAR LED")
-            gpio.output(12, True)
+            control_led(True)
             print(">>> LED LIGADO!")
         elif message.lower() == "desligar":
             print(">>> COMANDO: DESLIGAR LED")
-            gpio.output(12, False)
+            control_led(False)
             print(">>> LED DESLIGADO!")
         else:
             print(f">>> Comando não reconhecido: {message}")
@@ -94,8 +102,7 @@ def main():
     print("=" * 30)
     
     # Configurar GPIO
-    gpio.setup(12, "OUTPUT")
-    gpio.output(12, False)  # Inicialmente desligado
+    setup_gpio()
     
     # Criar cliente MQTT
     client = mqtt.Client(client_id=MQTT_CLIENT_ID)
@@ -121,7 +128,7 @@ def main():
         print(f"Erro: {e}")
     finally:
         # Limpeza
-        gpio.cleanup()
+        cleanup_gpio()
         client.disconnect()
         print("Dispositivo finalizado.")
 
