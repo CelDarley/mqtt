@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\UserController;
 
 
 /*
@@ -91,4 +92,34 @@ Route::prefix('departments')->group(function () {
 
     // Mover departamento na hierarquia
     Route::patch('/{id}/move', [DepartmentController::class, 'move']);
+});
+
+// Rotas para gerenciamento de Usuários
+Route::prefix('users')->group(function () {
+    // Listar todos os usuários (com filtros)
+    Route::get('/', [UserController::class, 'index']);
+
+    // Criar novo usuário
+    Route::post('/', [UserController::class, 'store']);
+
+    // Mostrar usuário específico
+    Route::get('/{id}', [UserController::class, 'show']);
+
+    // Atualizar usuário
+    Route::put('/{id}', [UserController::class, 'update']);
+
+    // Deletar usuário
+    Route::delete('/{id}', [UserController::class, 'destroy']);
+
+    // Trocar senha do usuário
+    Route::patch('/{id}/change-password', [UserController::class, 'changePassword']);
+
+    // Pesquisar usuários com filtros avançados
+    Route::get('/search', [UserController::class, 'search']);
+
+    // Listar usuários por companhia
+    Route::get('/company/{companyId}', [UserController::class, 'byCompany']);
+
+    // Estatísticas dos usuários
+    Route::get('/stats', [UserController::class, 'stats']);
 });

@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -21,6 +22,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'id_comp',
+        'tipo',
     ];
 
     /**
@@ -43,6 +47,55 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'id_comp' => 'integer',
         ];
+    }
+
+    /**
+     * Relacionamento com a companhia
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class, 'id_comp');
+    }
+
+    /**
+     * Verifica se o usuário é administrador
+     */
+    public function isAdmin(): bool
+    {
+        return $this->tipo === 'admin';
+    }
+
+    /**
+     * Verifica se o usuário é comum
+     */
+    public function isCommon(): bool
+    {
+        return $this->tipo === 'comum';
+    }
+
+    /**
+     * Escopo para usuários administradores
+     */
+    public function scopeAdmins($query)
+    {
+        return $query->where('tipo', 'admin');
+    }
+
+    /**
+     * Escopo para usuários comuns
+     */
+    public function scopeCommon($query)
+    {
+        return $query->where('tipo', 'comum');
+    }
+
+    /**
+     * Escopo para usuários de uma companhia específica
+     */
+    public function scopeByCompany($query, $companyId)
+    {
+        return $query->where('id_comp', $companyId);
     }
 }

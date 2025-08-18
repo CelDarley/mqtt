@@ -23,6 +23,14 @@ class Company extends Model
     }
 
     /**
+     * Relacionamento com usuários
+     */
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class, 'id_comp', 'id');
+    }
+
+    /**
      * Obter departamentos raiz (nível 1)
      */
     public function rootDepartments(): HasMany
@@ -41,5 +49,18 @@ class Company extends Model
             ->orderBy('name')
             ->get()
             ->groupBy('nivel_hierarquico');
+    }
+
+    /**
+     * Obter estatísticas da companhia
+     */
+    public function getStats()
+    {
+        return [
+            'total_departments' => $this->departments()->count(),
+            'total_users' => $this->users()->count(),
+            'admin_users' => $this->users()->where('tipo', 'admin')->count(),
+            'common_users' => $this->users()->where('tipo', 'comum')->count(),
+        ];
     }
 }
