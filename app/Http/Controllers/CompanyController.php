@@ -15,7 +15,15 @@ class CompanyController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $companies = Company::withCount('departments')->get();
+            // Buscar companhias diretamente do banco
+            $companies = \DB::table('companies')->get();
+
+            // Adicionar contagem de departamentos para cada companhia
+            foreach ($companies as $company) {
+                $company->departments_count = \DB::table('departments')
+                    ->where('id_comp', $company->id)
+                    ->count();
+            }
 
             return response()->json([
                 'success' => true,

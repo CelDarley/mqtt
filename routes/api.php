@@ -6,6 +6,7 @@ use App\Http\Controllers\TopicController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DepartmentController;
 
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -38,6 +39,8 @@ Route::prefix('mqtt')->group(function () {
     // Enviar mensagem para tópico
     Route::post('/send-message', [TopicController::class, 'sendMessage']);
 });
+
+
 
 // Rotas para gerenciamento de Companhias
 Route::prefix('companies')->group(function () {

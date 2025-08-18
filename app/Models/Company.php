@@ -19,7 +19,7 @@ class Company extends Model
      */
     public function departments(): HasMany
     {
-        return $this->hasMany(Department::class);
+        return $this->hasMany(Department::class, 'id_comp', 'id');
     }
 
     /**
@@ -27,7 +27,7 @@ class Company extends Model
      */
     public function rootDepartments(): HasMany
     {
-        return $this->hasMany(Department::class)->where('nivel_hierarquico', 1);
+        return $this->hasMany(Department::class, 'id_comp', 'id')->where('nivel_hierarquico', 1);
     }
 
     /**
