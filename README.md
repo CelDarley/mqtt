@@ -312,6 +312,10 @@ php -S 0.0.0.0:8000 -t public/
 
 ## 🏭 Produção
 
+Servidor da API MQTT - 10.100.0.200
+
+/root/
+
 Para produção, configure:
 
 1. `APP_ENV=production`

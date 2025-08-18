@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TopicController;
+use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\DepartmentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,16 +25,67 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('mqtt')->group(function () {
     // Criar novo tópico
     Route::post('/topics', [TopicController::class, 'store']);
-    
+
     // Listar todos os tópicos
     Route::get('/topics', [TopicController::class, 'index']);
-    
+
     // Mostrar tópico específico
     Route::get('/topics/{id}', [TopicController::class, 'show']);
-    
+
     // Desativar tópico
     Route::patch('/topics/{id}/deactivate', [TopicController::class, 'deactivate']);
-    
+
     // Enviar mensagem para tópico
     Route::post('/send-message', [TopicController::class, 'sendMessage']);
+});
+
+// Rotas para gerenciamento de Companhias
+Route::prefix('companies')->group(function () {
+    // Listar todas as companhias
+    Route::get('/', [CompanyController::class, 'index']);
+
+    // Criar nova companhia
+    Route::post('/', [CompanyController::class, 'store']);
+
+    // Mostrar companhia específica
+    Route::get('/{id}', [CompanyController::class, 'show']);
+
+    // Atualizar companhia
+    Route::put('/{id}', [CompanyController::class, 'update']);
+
+    // Deletar companhia
+    Route::delete('/{id}', [CompanyController::class, 'destroy']);
+
+    // Obter estrutura organizacional da companhia
+    Route::get('/{id}/structure', [CompanyController::class, 'organizationalStructure']);
+
+    // Obter árvore organizacional da companhia
+    Route::get('/{id}/tree', [CompanyController::class, 'organizationalTree']);
+});
+
+// Rotas para gerenciamento de Departamentos
+Route::prefix('departments')->group(function () {
+    // Listar todos os departamentos (com filtros)
+    Route::get('/', [DepartmentController::class, 'index']);
+
+    // Criar novo departamento
+    Route::post('/', [DepartmentController::class, 'store']);
+
+    // Mostrar departamento específico
+    Route::get('/{id}', [DepartmentController::class, 'show']);
+
+    // Atualizar departamento
+    Route::put('/{id}', [DepartmentController::class, 'update']);
+
+    // Deletar departamento
+    Route::delete('/{id}', [DepartmentController::class, 'destroy']);
+
+    // Obter hierarquia de um departamento
+    Route::get('/{id}/hierarchy', [DepartmentController::class, 'hierarchy']);
+
+    // Obter departamentos por companhia
+    Route::get('/company/{companyId}', [DepartmentController::class, 'byCompany']);
+
+    // Mover departamento na hierarquia
+    Route::patch('/{id}/move', [DepartmentController::class, 'move']);
 });
