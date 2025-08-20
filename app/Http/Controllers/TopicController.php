@@ -16,7 +16,8 @@ class TopicController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:topics,name',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
+            'group_id' => 'nullable|exists:device_groups,id'
         ]);
 
         $topic = Topic::create([
@@ -24,6 +25,18 @@ class TopicController extends Controller
             'description' => $request->description,
             'is_active' => true
         ]);
+
+        // Se um grupo foi especificado, criar a associação
+        if ($request->group_id) {
+            \App\Models\DeviceGroupAssignment::create([
+                'device_id' => $topic->id,
+                'group_id' => $request->group_id,
+                'is_active' => true
+            ]);
+        }
+
+        // Carregar o tópico com informações do grupo
+        $topic->load('groupAssignment.group');
 
         return response()->json([
             'success' => true,
@@ -94,7 +107,9 @@ class TopicController extends Controller
      */
     public function index(): JsonResponse
     {
-        $topics = Topic::where('is_active', true)->get();
+        $topics = Topic::with('groupAssignment.group')
+                      ->where('is_active', true)
+                      ->get();
 
         return response()->json([
             'success' => true,

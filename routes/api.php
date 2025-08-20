@@ -49,6 +49,29 @@ Route::prefix('mqtt')->group(function () {
     Route::post('/send-message', [TopicController::class, 'sendMessage']);
 });
 
+// Rotas para gerenciamento de Grupos de Dispositivos
+Route::prefix('device-groups')->group(function () {
+    // Listar todos os grupos
+    Route::get('/', [App\Http\Controllers\DeviceGroupController::class, 'index']);
+
+    // Criar novo grupo
+    Route::post('/', [App\Http\Controllers\DeviceGroupController::class, 'store']);
+
+    // Mostrar grupo específico
+    Route::get('/{id}', [App\Http\Controllers\DeviceGroupController::class, 'show']);
+
+    // Atualizar grupo
+    Route::put('/{id}', [App\Http\Controllers\DeviceGroupController::class, 'update']);
+
+    // Remover grupo
+    Route::delete('/{id}', [App\Http\Controllers\DeviceGroupController::class, 'destroy']);
+
+    // Atribuir dispositivo a um grupo
+    Route::post('/assign-device', [App\Http\Controllers\DeviceGroupController::class, 'assignDevice']);
+
+    // Listar dispositivos de um grupo
+    Route::get('/{id}/devices', [App\Http\Controllers\DeviceGroupController::class, 'devices']);
+});
 
 
 // Rotas para gerenciamento de Companhias
