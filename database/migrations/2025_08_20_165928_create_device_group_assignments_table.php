@@ -18,7 +18,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true); // Status da associação
             $table->timestamp('assigned_at')->useCurrent(); // Data/hora da associação
             $table->timestamps();
-            
+
             // Índices e chaves estrangeiras
             $table->foreign('device_id')->references('id')->on('topics')->onDelete('cascade');
             $table->foreign('group_id')->references('id')->on('device_groups')->onDelete('set null');
