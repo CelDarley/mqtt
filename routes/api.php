@@ -44,9 +44,22 @@ Route::prefix('mqtt')->group(function () {
 
     // Desativar tópico
     Route::patch('/topics/{id}/deactivate', [TopicController::class, 'deactivate']);
+    
+    // Excluir tópico permanentemente
+    Route::delete('/topics/{id}', [TopicController::class, 'destroy']);
 
     // Enviar mensagem para tópico
     Route::post('/send-message', [TopicController::class, 'sendMessage']);
+    
+    // Publicar comando MQTT (para interface web)
+    Route::post('/publish', [TopicController::class, 'publishCommand']);
+    
+    // 🚀 NOVO: Processar auto-registro de dispositivos
+    Route::post('/device-registration', [TopicController::class, 'processDeviceRegistration']);
+    
+    // Endpoint direto para comandos MQTT por tópico
+    Route::post('/iot/{topic_path}', [TopicController::class, 'sendDirectCommand'])
+        ->where('topic_path', '.*');
 });
 
 // Rotas para gerenciamento de Grupos de Dispositivos
