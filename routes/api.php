@@ -7,6 +7,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PendingDeviceController;
 
 
 /*
@@ -166,4 +167,33 @@ Route::prefix('users')->group(function () {
 
     // Estatísticas dos usuários
     Route::get('/stats', [UserController::class, 'stats']);
+});
+
+// ====== ROTAS PARA DISPOSITIVOS PENDENTES ======
+
+// Rota pública para ESP32 registrar dispositivos (sem autenticação)
+Route::post('/devices/pending', [PendingDeviceController::class, 'store']);
+
+// Rotas protegidas para gerenciar dispositivos pendentes
+Route::prefix('devices')->group(function () {
+    // Listar dispositivos pendentes
+    Route::get('/pending', [PendingDeviceController::class, 'index']);
+    
+    // Buscar dispositivo por MAC
+    Route::post('/pending/find-by-mac', [PendingDeviceController::class, 'findByMac']);
+    
+    // Estatísticas dos dispositivos
+    Route::get('/pending/stats', [PendingDeviceController::class, 'stats']);
+    
+    // Exibir dispositivo específico
+    Route::get('/pending/{id}', [PendingDeviceController::class, 'show']);
+    
+    // Ativar dispositivo (criar tópico MQTT)
+    Route::post('/pending/{id}/activate', [PendingDeviceController::class, 'activate']);
+    
+    // Rejeitar dispositivo
+    Route::post('/pending/{id}/reject', [PendingDeviceController::class, 'reject']);
+    
+    // Excluir dispositivo
+    Route::delete('/pending/{id}', [PendingDeviceController::class, 'destroy']);
 });
