@@ -827,8 +827,38 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
   
   Serial.printf("📨 MQTT recebido no tópico '%s': %s\n", topic, message.c_str());
   
-  // Processar comandos
-  if (message == "ligar_led" || message == "1") {
+  // Processar comando (JSON ou texto simples)
+  String command = "";
+  
+  // Verificar se é JSON
+  if (message.startsWith("{") && message.endsWith("}")) {
+    Serial.println("🔍 Detectado formato JSON, processando...");
+    
+    // Parse JSON simples para extrair comando
+    DynamicJsonDocument doc(256);
+    DeserializationError error = deserializeJson(doc, message);
+    
+    if (error) {
+      Serial.printf("❌ Erro ao parsear JSON: %s\n", error.c_str());
+      command = message; // Fallback para texto simples
+    } else {
+      // Extrair comando do JSON
+      if (doc.containsKey("command")) {
+        command = doc["command"].as<String>();
+        Serial.printf("📋 Comando extraído do JSON: %s\n", command.c_str());
+      } else {
+        Serial.println("⚠️ Campo 'command' não encontrado no JSON");
+        command = message; // Fallback
+      }
+    }
+  } else {
+    // Comando em texto simples
+    command = message;
+    Serial.printf("📝 Comando em texto simples: %s\n", command.c_str());
+  }
+  
+  // Processar comandos unificados
+  if (command == "ligar_led" || command == "led_on" || command == "1") {
     digitalWrite(LED_MQTT_PIN, HIGH);
     Serial.println("💡 LED MQTT ligado!");
     
@@ -836,7 +866,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     String confirmTopic = String(topic) + "/status";
     mqttClient.publish(confirmTopic.c_str(), "led_ligado");
     
-  } else if (message == "desligar_led" || message == "0") {
+  } else if (command == "desligar_led" || command == "led_off" || command == "0") {
     digitalWrite(LED_MQTT_PIN, LOW);
     Serial.println("💡 LED MQTT desligado!");
     
@@ -844,13 +874,13 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     String confirmTopic = String(topic) + "/status";
     mqttClient.publish(confirmTopic.c_str(), "led_desligado");
     
-  } else if (message == "status") {
+  } else if (command == "status") {
     // Responder com status atual
     String confirmTopic = String(topic) + "/status";
     bool ledState = digitalRead(LED_MQTT_PIN);
     mqttClient.publish(confirmTopic.c_str(), ledState ? "led_ligado" : "led_desligado");
     
-  } else if (message == "teste_led") {
+  } else if (command == "teste_led" || command == "test") {
     // Teste específico do LED MQTT
     Serial.println("🧪 Executando teste do LED MQTT...");
     for (int i = 0; i < 5; i++) {
@@ -865,7 +895,10 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     mqttClient.publish(confirmTopic.c_str(), "teste_led_concluido");
     
   } else {
-    Serial.printf("⚠️ Comando MQTT não reconhecido: %s\n", message.c_str());
+    Serial.printf("⚠️ Comando não reconhecido: '%s'\n", command.c_str());
+    Serial.println("📚 Comandos válidos:");
+    Serial.println("   Texto: ligar_led, desligar_led, status, teste_led, 1, 0");
+    Serial.println("   JSON: {\"command\":\"led_on\"}, {\"command\":\"led_off\"}");
   }
   
   // LED de notificação - piscar LED_MQTT_PIN para indicar mensagem recebida
