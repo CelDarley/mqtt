@@ -381,7 +381,7 @@ class PendingDeviceController extends Controller
             }
 
             $mqttConfig = [
-                'mqtt_broker' => env('MQTT_HOST', '10.102.0.112'),
+                'mqtt_broker' => env('MQTT_HOST', '10.102.0.101'),
                 'mqtt_port' => (int) env('MQTT_PORT', 1883),
                 'mqtt_topic' => $topic->name,
                 'mqtt_user' => env('MQTT_USERNAME', ''),
