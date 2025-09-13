@@ -850,17 +850,37 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     bool ledState = digitalRead(LED_MQTT_PIN);
     mqttClient.publish(confirmTopic.c_str(), ledState ? "led_ligado" : "led_desligado");
     
+  } else if (message == "teste_led") {
+    // Teste específico do LED MQTT
+    Serial.println("🧪 Executando teste do LED MQTT...");
+    for (int i = 0; i < 5; i++) {
+      Serial.printf("🔄 Teste LED %d/5\n", i+1);
+      digitalWrite(LED_MQTT_PIN, HIGH);
+      delay(200);
+      digitalWrite(LED_MQTT_PIN, LOW);
+      delay(200);
+    }
+    
+    String confirmTopic = String(topic) + "/status";
+    mqttClient.publish(confirmTopic.c_str(), "teste_led_concluido");
+    
   } else {
     Serial.printf("⚠️ Comando MQTT não reconhecido: %s\n", message.c_str());
   }
   
-  // LED de notificação - piscar rápido para indicar mensagem recebida
+  // LED de notificação - piscar LED_MQTT_PIN para indicar mensagem recebida
+  Serial.println("📳 Notificação: mensagem MQTT recebida!");
+  bool originalState = digitalRead(LED_MQTT_PIN); // Salvar estado original
+  
   for (int i = 0; i < 3; i++) {
-    digitalWrite(LED_EXTERNAL_PIN, HIGH);
-    delay(100);
-    digitalWrite(LED_EXTERNAL_PIN, LOW);
-    delay(100);
+    digitalWrite(LED_MQTT_PIN, HIGH);
+    delay(150);
+    digitalWrite(LED_MQTT_PIN, LOW);
+    delay(150);
   }
+  
+  // Restaurar estado original do LED
+  digitalWrite(LED_MQTT_PIN, originalState);
 }
 
 void connectMQTT() {
@@ -918,16 +938,24 @@ void setup() {
   
   // Teste LED
   Serial.println("🧪 Testando LEDs...");
+  Serial.printf("📍 LED_PIN (GPIO %d)\n", LED_PIN);
+  Serial.printf("📍 LED_EXTERNAL_PIN (GPIO %d)\n", LED_EXTERNAL_PIN);
+  Serial.printf("📍 LED_MQTT_PIN (GPIO %d)\n", LED_MQTT_PIN);
+  
   for (int i = 1; i <= 3; i++) {
+    Serial.printf("🔄 Teste %d/3 - Ligando LEDs...\n", i);
     digitalWrite(LED_PIN, HIGH);
     digitalWrite(LED_EXTERNAL_PIN, HIGH);
     digitalWrite(LED_MQTT_PIN, HIGH);
     delay(300);
+    
+    Serial.printf("🔄 Teste %d/3 - Desligando LEDs...\n", i);
     digitalWrite(LED_PIN, LOW);
     digitalWrite(LED_EXTERNAL_PIN, LOW);
     digitalWrite(LED_MQTT_PIN, LOW);
     delay(300);
   }
+  Serial.println("✅ Teste de LEDs concluído!");
   
   // Inicializar EEPROM
   EEPROM.begin(EEPROM_SIZE);
