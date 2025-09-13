@@ -104,7 +104,10 @@ input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; 
 
 <div class="form-group">
 <label>🔐 Senha da Rede</label>
-<input type="password" id="password" required placeholder="Senha da rede">
+<div style="position: relative;">
+<input type="password" id="password" required placeholder="Senha da rede" style="padding-right: 45px;">
+<span id="toggle-password" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 18px; color: #666;">👁️</span>
+</div>
 </div>
 
 <button type="submit" class="btn" id="connect-btn">🔗 CONECTAR</button>
@@ -292,6 +295,20 @@ document.getElementById('wifi-form').addEventListener('submit', function(e) {
     ssid: ssid, 
     password: pass
   }));
+});
+
+// Funcionalidade do ícone do olho para mostrar/ocultar senha
+document.getElementById('toggle-password').addEventListener('click', function() {
+  var passwordField = document.getElementById('password');
+  var toggleIcon = document.getElementById('toggle-password');
+  
+  if (passwordField.type === 'password') {
+    passwordField.type = 'text';
+    toggleIcon.textContent = '🙈';
+  } else {
+    passwordField.type = 'password';
+    toggleIcon.textContent = '👁️';
+  }
 });
 </script>
 </body>
