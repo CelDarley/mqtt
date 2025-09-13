@@ -859,7 +859,19 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
   
   // Processar comandos unificados
   if (command == "ligar_led" || command == "led_on" || command == "1") {
+    Serial.printf("🔧 Executando: digitalWrite(GPIO %d, HIGH)\n", LED_MQTT_PIN);
     digitalWrite(LED_MQTT_PIN, HIGH);
+    
+    // Verificar se o comando foi executado
+    int estado = digitalRead(LED_MQTT_PIN);
+    Serial.printf("🔍 Estado atual do GPIO %d após comando: %d\n", LED_MQTT_PIN, estado);
+    
+    if (estado == HIGH) {
+      Serial.println("✅ GPIO está HIGH - comando executado corretamente!");
+    } else {
+      Serial.println("❌ GPIO NÃO está HIGH - possível problema de hardware!");
+    }
+    
     Serial.println("💡 LED MQTT ligado!");
     
     // Enviar confirmação
@@ -867,7 +879,19 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     mqttClient.publish(confirmTopic.c_str(), "led_ligado");
     
   } else if (command == "desligar_led" || command == "led_off" || command == "0") {
+    Serial.printf("🔧 Executando: digitalWrite(GPIO %d, LOW)\n", LED_MQTT_PIN);
     digitalWrite(LED_MQTT_PIN, LOW);
+    
+    // Verificar se o comando foi executado
+    int estado = digitalRead(LED_MQTT_PIN);
+    Serial.printf("🔍 Estado atual do GPIO %d após comando: %d\n", LED_MQTT_PIN, estado);
+    
+    if (estado == LOW) {
+      Serial.println("✅ GPIO está LOW - comando executado corretamente!");
+    } else {
+      Serial.println("❌ GPIO NÃO está LOW - possível problema de hardware!");
+    }
+    
     Serial.println("💡 LED MQTT desligado!");
     
     // Enviar confirmação
@@ -893,6 +917,54 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     
     String confirmTopic = String(topic) + "/status";
     mqttClient.publish(confirmTopic.c_str(), "teste_led_concluido");
+    
+  } else if (command == "diagnostico" || command == "diag") {
+    // Diagnóstico completo de hardware
+    Serial.println("🔧 === DIAGNÓSTICO DE HARDWARE ===");
+    
+    // Testar todos os GPIOs
+    Serial.printf("📍 Testando GPIO %d (LED_PIN)...\n", LED_PIN);
+    digitalWrite(LED_PIN, HIGH);
+    delay(500);
+    digitalWrite(LED_PIN, LOW);
+    
+    Serial.printf("📍 Testando GPIO %d (LED_EXTERNAL_PIN)...\n", LED_EXTERNAL_PIN);
+    digitalWrite(LED_EXTERNAL_PIN, HIGH);
+    delay(500);
+    digitalWrite(LED_EXTERNAL_PIN, LOW);
+    
+    Serial.printf("📍 Testando GPIO %d (LED_MQTT_PIN)...\n", LED_MQTT_PIN);
+    
+    // Teste detalhado do GPIO 19
+    for (int i = 0; i < 3; i++) {
+      Serial.printf("🔧 GPIO 19 - Teste %d/3\n", i+1);
+      Serial.printf("   -> digitalWrite(19, HIGH)\n");
+      digitalWrite(LED_MQTT_PIN, HIGH);
+      Serial.printf("   -> Estado lido: %d\n", digitalRead(LED_MQTT_PIN));
+      delay(1000);
+      
+      Serial.printf("   -> digitalWrite(19, LOW)\n");
+      digitalWrite(LED_MQTT_PIN, LOW);
+      Serial.printf("   -> Estado lido: %d\n", digitalRead(LED_MQTT_PIN));
+      delay(1000);
+    }
+    
+    // Teste com outros pinos para comparar
+    Serial.println("🔧 Teste comparativo com outros pinos:");
+    int testPins[] = {2, 4, 5, 18, 19, 21, 22, 23};
+    for (int pin : testPins) {
+      Serial.printf("   GPIO %d: ", pin);
+      pinMode(pin, OUTPUT);
+      digitalWrite(pin, HIGH);
+      delay(100);
+      Serial.printf("HIGH=%d ", digitalRead(pin));
+      digitalWrite(pin, LOW);
+      delay(100);
+      Serial.printf("LOW=%d\n", digitalRead(pin));
+    }
+    
+    String confirmTopic = String(topic) + "/status";
+    mqttClient.publish(confirmTopic.c_str(), "diagnostico_concluido");
     
   } else {
     Serial.printf("⚠️ Comando não reconhecido: '%s'\n", command.c_str());
