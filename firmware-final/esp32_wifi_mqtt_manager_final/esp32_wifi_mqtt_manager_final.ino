@@ -568,6 +568,16 @@ bool registerDevice(String deviceName) {
   if (httpCode == 200 || httpCode == 201) {
     Serial.println("✅ Dispositivo registrado com sucesso!");
     
+    // Gerar e salvar tópico MQTT automaticamente: iot/<mac_address>
+    String macForTopic = macAddress;
+    macForTopic.replace(":", "");
+    macForTopic.toLowerCase();
+    String autoTopic = "iot/" + macForTopic;
+    
+    // Salvar configuração MQTT na EEPROM
+    saveMqttConfig(autoTopic, String(BACKEND_SERVER), 1883);
+    Serial.printf("💾 Tópico MQTT salvo automaticamente: %s\n", autoTopic.c_str());
+    
     // LED de sucesso - piscar 3 vezes
     for (int i = 0; i < 3; i++) {
       digitalWrite(LED_MQTT_PIN, HIGH);
@@ -584,6 +594,18 @@ bool registerDevice(String deviceName) {
   } else if (httpCode == 409) {
     // Dispositivo já registrado - não é erro
     Serial.println("ℹ️ Dispositivo já registrado no sistema");
+    
+    // Gerar e verificar tópico MQTT (sempre, independente do status)
+    String macForTopic = macAddress;
+    macForTopic.replace(":", "");
+    macForTopic.toLowerCase();
+    String autoTopic = "iot/" + macForTopic;
+    
+    // Verificar se tópico já está salvo na EEPROM
+    if (!loadMqttConfig() || mqtt_topic != autoTopic) {
+      saveMqttConfig(autoTopic, String(BACKEND_SERVER), 1883);
+      Serial.printf("💾 Tópico MQTT atualizado: %s\n", autoTopic.c_str());
+    }
     
     // Verificar se já está ativado
     if (response.indexOf("Ativado") >= 0) {

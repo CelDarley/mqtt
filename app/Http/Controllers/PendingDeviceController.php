@@ -191,9 +191,9 @@ class PendingDeviceController extends Controller
                 ], 400);
             }
 
-            // Criar tópico MQTT
+            // Criar tópico MQTT simples: iot/<mac_address>
             $macForTopic = str_replace(':', '', strtolower($device->mac_address));
-            $topicName = "iot/{$validatedData['department']}/{$validatedData['device_type']}/{$macForTopic}";
+            $topicName = "iot/{$macForTopic}";
             
             $topic = Topic::create([
                 'name' => $topicName,
