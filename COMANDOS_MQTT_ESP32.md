@@ -35,6 +35,8 @@ Tópico: iot/3c8427c849f0
 ## 💬 **Comandos Disponíveis**
 
 ### 1. **Ligar LED** 💡
+
+#### **Formato Texto Simples:**
 ```bash
 # Comando 1
 mosquitto_pub -h 10.102.0.101 -t "iot/3c8427c849f0" -m "ligar_led"
@@ -43,11 +45,19 @@ mosquitto_pub -h 10.102.0.101 -t "iot/3c8427c849f0" -m "ligar_led"
 mosquitto_pub -h 10.102.0.101 -t "iot/3c8427c849f0" -m "1"
 ```
 
+#### **Formato JSON:**
+```bash
+# Comando JSON
+mosquitto_pub -h 10.102.0.101 -t "iot/3c8427c849f0" -m '{"command":"led_on"}'
+```
+
 **Resultado:**
 - LED GPIO 19 liga
 - ESP32 responde no tópico `iot/3c8427c849f0/status` com `led_ligado`
 
 ### 2. **Desligar LED** 🌑
+
+#### **Formato Texto Simples:**
 ```bash
 # Comando 1
 mosquitto_pub -h 10.102.0.101 -t "iot/3c8427c849f0" -m "desligar_led"
@@ -56,19 +66,42 @@ mosquitto_pub -h 10.102.0.101 -t "iot/3c8427c849f0" -m "desligar_led"
 mosquitto_pub -h 10.102.0.101 -t "iot/3c8427c849f0" -m "0"
 ```
 
+#### **Formato JSON:**
+```bash
+# Comando JSON
+mosquitto_pub -h 10.102.0.101 -t "iot/3c8427c849f0" -m '{"command":"led_off"}'
+```
+
 **Resultado:**
 - LED GPIO 19 desliga
 - ESP32 responde no tópico `iot/3c8427c849f0/status` com `led_desligado`
 
 ### 3. **Consultar Status** 📊
 ```bash
+# Texto simples
 mosquitto_pub -h 10.102.0.101 -t "iot/3c8427c849f0" -m "status"
+
+# Formato JSON
+mosquitto_pub -h 10.102.0.101 -t "iot/3c8427c849f0" -m '{"command":"status"}'
 ```
 
 **Resultado:**
 - ESP32 responde no tópico `iot/3c8427c849f0/status` com:
   - `led_ligado` (se LED estiver ligado)
   - `led_desligado` (se LED estiver desligado)
+
+### 4. **Teste do LED** 🧪
+```bash
+# Texto simples
+mosquitto_pub -h 10.102.0.101 -t "iot/3c8427c849f0" -m "teste_led"
+
+# Formato JSON
+mosquitto_pub -h 10.102.0.101 -t "iot/3c8427c849f0" -m '{"command":"test"}'
+```
+
+**Resultado:**
+- LED GPIO 19 pisca 5 vezes para teste
+- ESP32 responde com `teste_led_concluido`
 
 ---
 
