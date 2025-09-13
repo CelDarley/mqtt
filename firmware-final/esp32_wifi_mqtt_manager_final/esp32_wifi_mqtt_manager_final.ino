@@ -10,6 +10,7 @@
 #include <ArduinoJson.h>
 #include <esp_wifi.h>
 #include <HTTPClient.h>
+#include <PubSubClient.h>
 
 // ====== CONFIGURAÇÕES ======
 #define LED_PIN 48          // LED interno ESP32-S3-WROOM
@@ -53,6 +54,8 @@
 // ====== VARIÁVEIS GLOBAIS ======
 WebServer server(5000);
 DNSServer dnsServer;
+WiFiClient espClient;
+PubSubClient mqttClient(espClient);
 
 int led_state = LED_OFF;
 unsigned long last_led_update = 0;
@@ -814,6 +817,92 @@ void handleConfigure() {
   }
 }
 
+// ====== FUNÇÕES MQTT ======
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+  // Converter payload para string
+  String message = "";
+  for (int i = 0; i < length; i++) {
+    message += (char)payload[i];
+  }
+  
+  Serial.printf("📨 MQTT recebido no tópico '%s': %s\n", topic, message.c_str());
+  
+  // Processar comandos
+  if (message == "ligar_led" || message == "1") {
+    digitalWrite(LED_MQTT_PIN, HIGH);
+    Serial.println("💡 LED MQTT ligado!");
+    
+    // Enviar confirmação
+    String confirmTopic = String(topic) + "/status";
+    mqttClient.publish(confirmTopic.c_str(), "led_ligado");
+    
+  } else if (message == "desligar_led" || message == "0") {
+    digitalWrite(LED_MQTT_PIN, LOW);
+    Serial.println("💡 LED MQTT desligado!");
+    
+    // Enviar confirmação
+    String confirmTopic = String(topic) + "/status";
+    mqttClient.publish(confirmTopic.c_str(), "led_desligado");
+    
+  } else if (message == "status") {
+    // Responder com status atual
+    String confirmTopic = String(topic) + "/status";
+    bool ledState = digitalRead(LED_MQTT_PIN);
+    mqttClient.publish(confirmTopic.c_str(), ledState ? "led_ligado" : "led_desligado");
+    
+  } else {
+    Serial.printf("⚠️ Comando MQTT não reconhecido: %s\n", message.c_str());
+  }
+  
+  // LED de notificação - piscar rápido para indicar mensagem recebida
+  for (int i = 0; i < 3; i++) {
+    digitalWrite(LED_EXTERNAL_PIN, HIGH);
+    delay(100);
+    digitalWrite(LED_EXTERNAL_PIN, LOW);
+    delay(100);
+  }
+}
+
+void connectMQTT() {
+  if (!mqtt_topic.length() || !mqtt_broker.length()) {
+    Serial.println("⚠️ Configuração MQTT não disponível");
+    return;
+  }
+  
+  mqttClient.setServer(mqtt_broker.c_str(), mqtt_port);
+  mqttClient.setCallback(mqttCallback);
+  
+  // Tentar conectar
+  String clientId = "ESP32-" + WiFi.macAddress();
+  
+  Serial.printf("🔌 Conectando ao MQTT broker %s:%d...\n", mqtt_broker.c_str(), mqtt_port);
+  
+  if (mqttClient.connect(clientId.c_str())) {
+    Serial.println("✅ Conectado ao MQTT!");
+    
+    // Subscrever ao tópico
+    mqttClient.subscribe(mqtt_topic.c_str());
+    Serial.printf("📺 Subscrito ao tópico: %s\n", mqtt_topic.c_str());
+    
+    // Enviar mensagem de status
+    String statusTopic = mqtt_topic + "/status";
+    mqttClient.publish(statusTopic.c_str(), "online");
+    
+  } else {
+    Serial.printf("❌ Falha na conexão MQTT, rc=%d\n", mqttClient.state());
+  }
+}
+
+void maintainMQTT() {
+  if (WiFi.status() == WL_CONNECTED && mqtt_topic.length() > 0) {
+    if (!mqttClient.connected()) {
+      connectMQTT();
+    } else {
+      mqttClient.loop();
+    }
+  }
+}
+
 // ====== SETUP E LOOP ======
 void setup() {
   Serial.begin(115200);
@@ -852,6 +941,15 @@ void setup() {
       Serial.println("✅ Conectado com credenciais salvas!");
       setLedState(LED_ON);  // LED fixo = conectado
       digitalWrite(LED_MQTT_PIN, LOW); // Garantir que LED MQTT esteja desligado
+      
+      // Carregar configuração MQTT e conectar
+      if (loadMqttConfig()) {
+        Serial.println("🔌 Configuração MQTT encontrada, conectando...");
+        delay(2000); // Aguardar estabilização da conexão WiFi
+        connectMQTT();
+      } else {
+        Serial.println("⚠️ Nenhuma configuração MQTT encontrada");
+      }
       
       // Modo normal - apenas piscar para indicar que está funcionando
       return;
@@ -903,6 +1001,10 @@ void loop() {
         setLedState(LED_ON);
         digitalWrite(LED_MQTT_PIN, LOW); // Garantir LED MQTT desligado
       }
+      
+      // Manter conexão MQTT
+      maintainMQTT();
+      
     } else {
       // Perdeu conexão - piscar rápido
       if (led_state != LED_FAST_BLINK) {
