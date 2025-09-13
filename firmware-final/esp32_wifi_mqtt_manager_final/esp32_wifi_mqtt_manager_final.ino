@@ -966,11 +966,80 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     String confirmTopic = String(topic) + "/status";
     mqttClient.publish(confirmTopic.c_str(), "diagnostico_concluido");
     
+  } else if (command == "encontrar_led" || command == "find_led") {
+    // Teste sequencial para encontrar onde o LED está conectado
+    Serial.println("🔍 === ENCONTRANDO LED ===");
+    Serial.println("⚠️ Observe qual GPIO acende o LED!");
+    
+    // Lista de GPIOs comuns do ESP32
+    int testPins[] = {2, 4, 5, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33};
+    int numPins = sizeof(testPins) / sizeof(testPins[0]);
+    
+    for (int i = 0; i < numPins; i++) {
+      int pin = testPins[i];
+      
+      Serial.printf("🔧 Testando GPIO %d...\n", pin);
+      Serial.printf("   ➡️ Configurando como OUTPUT\n");
+      
+      pinMode(pin, OUTPUT);
+      
+      Serial.printf("   ➡️ Enviando HIGH para GPIO %d\n", pin);
+      digitalWrite(pin, HIGH);
+      
+      Serial.printf("   ⏳ GPIO %d está HIGH por 3 segundos - OBSERVE O LED!\n", pin);
+      delay(3000);  // 3 segundos para observar
+      
+      Serial.printf("   ➡️ Enviando LOW para GPIO %d\n", pin);
+      digitalWrite(pin, LOW);
+      
+      Serial.printf("   ⏳ GPIO %d está LOW por 1 segundo\n", pin);
+      delay(1000);   // 1 segundo de pausa
+      
+      Serial.printf("✅ Teste do GPIO %d concluído\n\n", pin);
+    }
+    
+    Serial.println("🎉 Teste completo!");
+    Serial.println("📝 Anote qual GPIO acendeu o LED e me informe!");
+    
+    String confirmTopic = String(topic) + "/status";
+    mqttClient.publish(confirmTopic.c_str(), "encontrar_led_concluido");
+    
+  } else if (command.startsWith("testar_gpio_")) {
+    // Comando para testar um GPIO específico: testar_gpio_2, testar_gpio_16, etc.
+    String pinStr = command.substring(12); // Remove "testar_gpio_"
+    int pin = pinStr.toInt();
+    
+    if (pin >= 0 && pin <= 39) {
+      Serial.printf("🔧 Testando especificamente GPIO %d\n", pin);
+      
+      pinMode(pin, OUTPUT);
+      
+      for (int i = 0; i < 5; i++) {
+        Serial.printf("   🔄 Ciclo %d/5 - GPIO %d HIGH\n", i+1, pin);
+        digitalWrite(pin, HIGH);
+        delay(500);
+        
+        Serial.printf("   🔄 Ciclo %d/5 - GPIO %d LOW\n", i+1, pin);
+        digitalWrite(pin, LOW);
+        delay(500);
+      }
+      
+      Serial.printf("✅ Teste do GPIO %d concluído\n", pin);
+      
+      String confirmTopic = String(topic) + "/status";
+      String response = "gpio_" + String(pin) + "_testado";
+      mqttClient.publish(confirmTopic.c_str(), response.c_str());
+    } else {
+      Serial.printf("❌ GPIO inválido: %d (deve ser 0-39)\n", pin);
+    }
+    
   } else {
     Serial.printf("⚠️ Comando não reconhecido: '%s'\n", command.c_str());
     Serial.println("📚 Comandos válidos:");
-    Serial.println("   Texto: ligar_led, desligar_led, status, teste_led, 1, 0");
-    Serial.println("   JSON: {\"command\":\"led_on\"}, {\"command\":\"led_off\"}");
+    Serial.println("   Controle: ligar_led, desligar_led, status, 1, 0");
+    Serial.println("   Teste: teste_led, diagnostico, encontrar_led");
+    Serial.println("   GPIO específico: testar_gpio_2, testar_gpio_16, testar_gpio_19");
+    Serial.println("   JSON: {\"command\":\"led_on\"}, {\"command\":\"find_led\"}");
   }
   
   // LED de notificação - piscar LED_MQTT_PIN para indicar mensagem recebida
