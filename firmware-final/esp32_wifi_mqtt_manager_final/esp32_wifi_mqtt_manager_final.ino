@@ -994,36 +994,84 @@ void connectMQTT() {
     return;
   }
   
+  Serial.printf("🔧 Configurando servidor MQTT: %s:%d\n", mqtt_broker.c_str(), mqtt_port);
   mqttClient.setServer(mqtt_broker.c_str(), mqtt_port);
   mqttClient.setCallback(mqttCallback);
   
   // Tentar conectar
   String clientId = "ESP32-" + WiFi.macAddress();
+  Serial.printf("🆔 Client ID: %s\n", clientId.c_str());
   
   Serial.printf("🔌 Conectando ao MQTT broker %s:%d...\n", mqtt_broker.c_str(), mqtt_port);
+  Serial.println("⏳ Aguardando conexão MQTT...");
   
   if (mqttClient.connect(clientId.c_str())) {
-    Serial.println("✅ Conectado ao MQTT!");
+    Serial.println("✅ CONECTADO AO MQTT COM SUCESSO!");
+    Serial.printf("📡 Status da conexão: %d\n", mqttClient.state());
     
     // Subscrever ao tópico
-    mqttClient.subscribe(mqtt_topic.c_str());
-    Serial.printf("📺 Subscrito ao tópico: %s\n", mqtt_topic.c_str());
+    bool subscribed = mqttClient.subscribe(mqtt_topic.c_str());
+    if (subscribed) {
+      Serial.printf("✅ Subscrito ao tópico: %s\n", mqtt_topic.c_str());
+    } else {
+      Serial.printf("❌ FALHA ao subscrever tópico: %s\n", mqtt_topic.c_str());
+    }
     
     // Enviar mensagem de status
     String statusTopic = mqtt_topic + "/status";
-    mqttClient.publish(statusTopic.c_str(), "online");
+    bool published = mqttClient.publish(statusTopic.c_str(), "online");
+    if (published) {
+      Serial.printf("✅ Status 'online' enviado para: %s\n", statusTopic.c_str());
+    } else {
+      Serial.printf("❌ FALHA ao enviar status para: %s\n", statusTopic.c_str());
+    }
+    
+    Serial.println("🎉 MQTT TOTALMENTE CONFIGURADO E PRONTO!");
     
   } else {
-    Serial.printf("❌ Falha na conexão MQTT, rc=%d\n", mqttClient.state());
+    int state = mqttClient.state();
+    Serial.printf("❌ FALHA NA CONEXÃO MQTT!\n");
+    Serial.printf("🔍 Código de erro: %d\n", state);
+    Serial.println("📚 Códigos de erro MQTT:");
+    Serial.println("   -4: MQTT_CONNECTION_TIMEOUT");
+    Serial.println("   -3: MQTT_CONNECTION_LOST");
+    Serial.println("   -2: MQTT_CONNECT_FAILED");
+    Serial.println("   -1: MQTT_DISCONNECTED");
+    Serial.println("    0: MQTT_CONNECTED");
+    Serial.println("    1: MQTT_CONNECT_BAD_PROTOCOL");
+    Serial.println("    2: MQTT_CONNECT_BAD_CLIENT_ID");
+    Serial.println("    3: MQTT_CONNECT_UNAVAILABLE");
+    Serial.println("    4: MQTT_CONNECT_BAD_CREDENTIALS");
+    Serial.println("    5: MQTT_CONNECT_UNAUTHORIZED");
+    
+    // Tentar diagnóstico de rede
+    Serial.printf("🌐 Testando conectividade com %s...\n", mqtt_broker.c_str());
   }
 }
 
 void maintainMQTT() {
   if (WiFi.status() == WL_CONNECTED && mqtt_topic.length() > 0) {
     if (!mqttClient.connected()) {
+      Serial.println("⚠️ MQTT desconectado! Tentando reconectar...");
       connectMQTT();
     } else {
+      // MQTT conectado - manter ativo
       mqttClient.loop();
+      
+      // Log periódico de status (a cada 30 segundos)
+      static unsigned long lastStatusLog = 0;
+      if (millis() - lastStatusLog > 30000) {
+        Serial.printf("✅ MQTT ativo - Estado: %d, Tópico: %s\n", mqttClient.state(), mqtt_topic.c_str());
+        lastStatusLog = millis();
+      }
+    }
+  } else {
+    if (WiFi.status() != WL_CONNECTED) {
+      static unsigned long lastWifiLog = 0;
+      if (millis() - lastWifiLog > 5000) {
+        Serial.println("⚠️ WiFi desconectado - MQTT indisponível");
+        lastWifiLog = millis();
+      }
     }
   }
 }
