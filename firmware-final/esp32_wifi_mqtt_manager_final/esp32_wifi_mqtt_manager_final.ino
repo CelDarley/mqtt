@@ -1029,6 +1029,10 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     
     // Monitorar por 30 segundos
     while (millis() - startTime < 30000 && !detected) {
+      // CRÍTICO: Alimentar watchdog para evitar reset
+      yield();
+      ESP.wdtFeed();
+      
       for (int i = 0; i < numPins; i++) {
         int pin = monitorPins[i];
         int state = digitalRead(pin);
@@ -1044,6 +1048,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
           bool confirmed = true;
           for (int j = 0; j < 10; j++) {
             delay(100);
+            yield(); // Alimentar watchdog
             if (digitalRead(pin) != HIGH) {
               confirmed = false;
               break;
@@ -1072,6 +1077,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
               delay(300);
               digitalWrite(pin, LOW);
               delay(300);
+              yield(); // Alimentar watchdog
             }
             
             String confirmTopic = String(topic) + "/status";
@@ -1092,9 +1098,11 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
         int elapsed = (millis() - startTime) / 1000;
         Serial.printf("⏱️ Detectando... %d/30 segundos\n", elapsed);
         lastProgress = millis();
+        yield(); // Alimentar watchdog
       }
       
       delay(50); // Pequena pausa para não sobrecarregar
+      yield(); // CRÍTICO: Alimentar watchdog em cada iteração
     }
     
     if (!detected) {
