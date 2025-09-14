@@ -1012,7 +1012,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     Serial.println("📝 Exemplo: mosquitto_pub -h 10.102.0.101 -t iot/3c8427c849f0 -m encontrar_led");
     
     String confirmTopic = String(topic) + "/status";
-    mqttClient.publish(confirmTopic.c_str(), "comando_desabilitado_use_encontrar_led")
+    mqttClient.publish(confirmTopic.c_str(), "comando_desabilitado_use_encontrar_led");
     
   } else if (command.startsWith("testar_gpio_")) {
     // Comando para testar um GPIO específico: testar_gpio_2, testar_gpio_16, etc.
