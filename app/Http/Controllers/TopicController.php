@@ -438,6 +438,35 @@ class TopicController extends Controller
     }
 
     /**
+     * Atualizar um tópico
+     */
+    public function update(Request $request, $id): JsonResponse
+    {
+        $topic = Topic::find($id);
+
+        if (!$topic) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tópico não encontrado'
+            ], 404);
+        }
+
+        $request->validate([
+            'name' => 'sometimes|required|string|max:255|unique:topics,name,' . $id,
+            'description' => 'nullable|string',
+            'is_active' => 'sometimes|boolean'
+        ]);
+
+        $topic->update($request->only(['name', 'description', 'is_active']));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tópico atualizado com sucesso',
+            'data' => $topic
+        ], 200);
+    }
+
+    /**
      * Desativar um tópico
      */
     public function deactivate($id): JsonResponse

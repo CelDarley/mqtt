@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\DeviceTypeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PendingDeviceController;
@@ -42,6 +43,9 @@ Route::prefix('mqtt')->group(function () {
 
     // Mostrar tópico específico
     Route::get('/topics/{id}', [TopicController::class, 'show']);
+
+    // Atualizar tópico
+    Route::put('/topics/{id}', [TopicController::class, 'update']);
 
     // Desativar tópico
     Route::patch('/topics/{id}/deactivate', [TopicController::class, 'deactivate']);
@@ -137,6 +141,30 @@ Route::prefix('departments')->group(function () {
 
     // Mover departamento na hierarquia
     Route::patch('/{id}/move', [DepartmentController::class, 'move']);
+});
+
+// Rotas para gerenciamento de Tipos de Dispositivo
+Route::prefix('device-types')->group(function () {
+    // Listar todos os tipos de dispositivo (com filtros)
+    Route::get('/', [DeviceTypeController::class, 'index']);
+
+    // Criar novo tipo de dispositivo
+    Route::post('/', [DeviceTypeController::class, 'store']);
+
+    // Mostrar tipo de dispositivo específico
+    Route::get('/{id}', [DeviceTypeController::class, 'show']);
+
+    // Atualizar tipo de dispositivo
+    Route::put('/{id}', [DeviceTypeController::class, 'update']);
+
+    // Deletar tipo de dispositivo
+    Route::delete('/{id}', [DeviceTypeController::class, 'destroy']);
+
+    // Ativar/desativar tipo de dispositivo
+    Route::patch('/{id}/toggle-status', [DeviceTypeController::class, 'toggleStatus']);
+
+    // Estatísticas dos tipos de dispositivo
+    Route::get('/stats', [DeviceTypeController::class, 'stats']);
 });
 
 // Rotas para gerenciamento de Usuários
