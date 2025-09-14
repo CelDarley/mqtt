@@ -1005,115 +1005,62 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     mqttClient.publish(confirmTopic.c_str(), "encontrar_led_concluido");
     
   } else if (command == "detectar_gpio" || command == "detect_gpio") {
-    // Detectar qual GPIO está recebendo HIGH do usuário
-    Serial.println("🔍 === DETECTANDO GPIO ATIVO ===");
-    Serial.println("📡 Monitorando GPIOs por sinais HIGH...");
-    Serial.println("⚠️ AGORA: Envie HIGH para o GPIO que você quer usar!");
-    Serial.println("⏱️ Tempo de detecção: 30 segundos");
+    // Versão simplificada que não causa reset - leitura rápida
+    Serial.println("🔍 === DETECÇÃO RÁPIDA DE GPIO ===");
+    Serial.println("📡 Fazendo leitura instantânea dos GPIOs...");
     
-    // Lista de GPIOs para monitorar
-    int monitorPins[] = {2, 4, 5, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33};
-    int numPins = sizeof(monitorPins) / sizeof(monitorPins[0]);
+    // Lista de GPIOs para verificar
+    int testPins[] = {2, 4, 5, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33};
+    int numPins = sizeof(testPins) / sizeof(testPins[0]);
     
-    // Configurar todos como INPUT_PULLDOWN
+    Serial.println("⚡ Conecte seu LED ao 3.3V AGORA e execute este comando novamente!");
+    Serial.println("🔍 Verificando estado atual dos GPIOs:");
+    
+    bool foundHigh = false;
     for (int i = 0; i < numPins; i++) {
-      pinMode(monitorPins[i], INPUT_PULLDOWN);
-    }
-    
-    Serial.println("✅ GPIOs configurados como INPUT_PULLDOWN");
-    Serial.println("🔍 Iniciando detecção...");
-    
-    unsigned long startTime = millis();
-    int detectedGPIO = -1;
-    bool detected = false;
-    
-    // Monitorar por 30 segundos
-    while (millis() - startTime < 30000 && !detected) {
-      // CRÍTICO: Alimentar watchdog para evitar reset
-      yield();
-      ESP.wdtFeed();
+      int pin = testPins[i];
+      pinMode(pin, INPUT_PULLDOWN);
+      delay(10); // Pequeno delay para estabilizar
+      int state = digitalRead(pin);
       
-      for (int i = 0; i < numPins; i++) {
-        int pin = monitorPins[i];
-        int state = digitalRead(pin);
+      Serial.printf("   GPIO %d: %s\n", pin, state == HIGH ? "HIGH ⚡" : "LOW");
+      
+      if (state == HIGH) {
+        foundHigh = true;
+        Serial.printf("\n🎉 ENCONTRADO! GPIO %d está HIGH!\n", pin);
+        Serial.printf("🔧 Configurando GPIO %d como LED MQTT...\n", pin);
         
-        if (state == HIGH) {
-          detectedGPIO = pin;
-          detected = true;
-          
-          Serial.printf("🎉 GPIO %d DETECTADO COMO HIGH!\n", pin);
-          Serial.printf("🔧 Confirmando detecção...\n");
-          
-          // Confirmar por 1 segundo
-          bool confirmed = true;
-          for (int j = 0; j < 10; j++) {
-            delay(100);
-            yield(); // Alimentar watchdog
-            if (digitalRead(pin) != HIGH) {
-              confirmed = false;
-              break;
-            }
-          }
-          
-          if (confirmed) {
-            Serial.printf("✅ GPIO %d CONFIRMADO!\n", pin);
-            Serial.printf("🔄 Configurando GPIO %d como novo LED_MQTT_PIN...\n", pin);
-            
-            // Reconfigurar o GPIO detectado como OUTPUT
-            pinMode(pin, OUTPUT);
-            digitalWrite(pin, LOW); // Começar desligado
-            
-            Serial.printf("🎉 SUCESSO! GPIO %d agora é o LED MQTT!\n", pin);
-            Serial.println("📝 Para usar permanentemente, atualize no código:");
-            Serial.printf("   #define LED_MQTT_PIN %d\n", pin);
-            
-            // Atualizar temporariamente (só nesta sessão)
-            // Não podemos redefinir a constante, mas podemos criar uma variável
-            Serial.printf("⚡ Testando GPIO %d...\n", pin);
-            
-            // Teste rápido
-            for (int k = 0; k < 3; k++) {
-              digitalWrite(pin, HIGH);
-              delay(300);
-              digitalWrite(pin, LOW);
-              delay(300);
-              yield(); // Alimentar watchdog
-            }
-            
-            String confirmTopic = String(topic) + "/status";
-            String response = "gpio_" + String(pin) + "_detectado";
-            mqttClient.publish(confirmTopic.c_str(), response.c_str());
-            
-          } else {
-            Serial.printf("❌ GPIO %d não confirmado (sinal instável)\n", pin);
-            detected = false;
-          }
-          break;
+        // Configurar como output e testar
+        pinMode(pin, OUTPUT);
+        digitalWrite(pin, LOW);
+        
+        Serial.printf("⚡ Testando GPIO %d com 3 piscadas...\n", pin);
+        for (int j = 0; j < 3; j++) {
+          digitalWrite(pin, HIGH);
+          delay(500);
+          digitalWrite(pin, LOW);
+          delay(500);
         }
+        
+        Serial.printf("✅ GPIO %d testado! Se o LED piscou, este é o GPIO correto!\n", pin);
+        Serial.printf("📝 Para usar permanentemente: #define LED_MQTT_PIN %d\n", pin);
+        
+        String confirmTopic = String(topic) + "/status";
+        String response = "gpio_" + String(pin) + "_detectado";
+        mqttClient.publish(confirmTopic.c_str(), response.c_str());
+        break;
       }
-      
-      // Log de progresso a cada 5 segundos
-      static unsigned long lastProgress = 0;
-      if (millis() - lastProgress > 5000) {
-        int elapsed = (millis() - startTime) / 1000;
-        Serial.printf("⏱️ Detectando... %d/30 segundos\n", elapsed);
-        lastProgress = millis();
-        yield(); // Alimentar watchdog
-      }
-      
-      delay(50); // Pequena pausa para não sobrecarregar
-      yield(); // CRÍTICO: Alimentar watchdog em cada iteração
     }
     
-    if (!detected) {
-      Serial.println("⏰ Tempo esgotado! Nenhum GPIO com HIGH detectado.");
-      Serial.println("💡 Dicas:");
-      Serial.println("   - Verifique se o sinal está realmente HIGH (3.3V)");
-      Serial.println("   - Tente conectar GPIO ao 3.3V do ESP32");
-      Serial.println("   - Execute o comando novamente");
+    if (!foundHigh) {
+      Serial.println("\n❌ Nenhum GPIO está HIGH!");
+      Serial.println("💡 Para detectar seu LED:");
+      Serial.println("   1. Conecte um fio do pino 3.3V para o GPIO onde seu LED está");
+      Serial.println("   2. Execute 'detectar_gpio' novamente");
+      Serial.println("   3. OU use 'encontrar_led' para teste sequencial");
       
       String confirmTopic = String(topic) + "/status";
-      mqttClient.publish(confirmTopic.c_str(), "nenhum_gpio_detectado");
+      mqttClient.publish(confirmTopic.c_str(), "nenhum_gpio_high");
     }
     
   } else if (command.startsWith("testar_gpio_")) {
