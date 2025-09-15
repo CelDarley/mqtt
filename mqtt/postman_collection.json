@@ -1,0 +1,220 @@
+{
+	"info": {
+		"_postman_id": "api-mqtt-collection",
+		"name": "API MQTT - 10.102.0.21",
+		"description": "Coleção completa da API MQTT para controle de tópicos e envio de mensagens",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "📋 Listar Tópicos",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://10.102.0.21:8000/api/mqtt/topics",
+					"protocol": "http",
+					"host": [
+						"10.102.0.21"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"mqtt",
+						"topics"
+					]
+				},
+				"description": "Lista todos os tópicos cadastrados no sistema"
+			},
+			"response": []
+		},
+		{
+			"name": "➕ Criar Tópico",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"dispositivo/porta\",\n    \"description\": \"Controle da porta principal\"\n}"
+				},
+				"url": {
+					"raw": "http://10.102.0.21:8000/api/mqtt/topics",
+					"protocol": "http",
+					"host": [
+						"10.102.0.21"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"mqtt",
+						"topics"
+					]
+				},
+				"description": "Cria um novo tópico no sistema"
+			},
+			"response": []
+		},
+		{
+			"name": "👁️ Mostrar Tópico Específico",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://10.102.0.21:8000/api/mqtt/topics/1",
+					"protocol": "http",
+					"host": [
+						"10.102.0.21"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"mqtt",
+						"topics",
+						"1"
+					]
+				},
+				"description": "Mostra informações de um tópico específico pelo ID"
+			},
+			"response": []
+		},
+		{
+			"name": "🚫 Desativar Tópico",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://10.102.0.21:8000/api/mqtt/topics/1/deactivate",
+					"protocol": "http",
+					"host": [
+						"10.102.0.21"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"mqtt",
+						"topics",
+						"1",
+						"deactivate"
+					]
+				},
+				"description": "Desativa um tópico específico pelo ID"
+			},
+			"response": []
+		},
+		{
+			"name": "📤 Enviar Mensagem",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"topico\": \"dispositivo/porta\",\n    \"mensagem\": \"liberar\"\n}"
+				},
+				"url": {
+					"raw": "http://10.102.0.21:8000/api/mqtt/send-message",
+					"protocol": "http",
+					"host": [
+						"10.102.0.21"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"mqtt",
+						"send-message"
+					]
+				},
+				"description": "Envia uma mensagem para um tópico específico"
+			},
+			"response": []
+		},
+		{
+			"name": "🔒 Enviar Mensagem (Tópico Inexistente)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"topico\": \"topico/inexistente\",\n    \"mensagem\": \"liberar\"\n}"
+				},
+				"url": {
+					"raw": "http://10.102.0.21:8000/api/mqtt/send-message",
+					"protocol": "http",
+					"host": [
+						"10.102.0.21"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"mqtt",
+						"send-message"
+					]
+				},
+				"description": "Testa o envio de mensagem para um tópico que não existe"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://10.102.0.21:8000",
+			"type": "string"
+		},
+		{
+			"key": "api_version",
+			"value": "api/mqtt",
+			"type": "string"
+		}
+	]
+} 

@@ -1,0 +1,406 @@
+/* Paleta de cores personalizada */
+:root {
+  --vt-c-white: #ffffff;
+  --vt-c-white-soft: #f8f8f8;
+  --vt-c-white-mute: #f2f2f2;
+
+  --vt-c-black: #181818;
+  --vt-c-black-soft: #222222;
+  --vt-c-black-mute: #282828;
+
+  /* Paleta principal - tons de cinza azulado */
+  --vt-c-primary: #536173;
+  --vt-c-primary-light: #6b7a8a;
+  --vt-c-primary-dark: #404B59;
+  --vt-c-primary-darker: #2d3440;
+  --vt-c-primary-lightest: #8a9ba8;
+
+  --vt-c-divider-light-1: rgba(83, 97, 115, 0.29);
+  --vt-c-divider-light-2: rgba(83, 97, 115, 0.12);
+  --vt-c-divider-dark-1: rgba(64, 75, 89, 0.65);
+  --vt-c-divider-dark-2: rgba(64, 75, 89, 0.48);
+
+  --vt-c-text-light-1: var(--vt-c-primary-dark);
+  --vt-c-text-light-2: rgba(64, 75, 89, 0.66);
+  --vt-c-text-dark-1: var(--vt-c-white);
+  --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
+}
+
+/* semantic color variables for this project */
+:root {
+  --color-background: var(--vt-c-white);
+  --color-background-soft: var(--vt-c-white-soft);
+  --color-background-mute: var(--vt-c-white-mute);
+
+  --color-primary: var(--vt-c-primary);
+  --color-primary-light: var(--vt-c-primary-light);
+  --color-primary-dark: var(--vt-c-primary-dark);
+  --color-primary-darker: var(--vt-c-primary-darker);
+  --color-primary-lightest: var(--vt-c-primary-lightest);
+
+  --color-border: var(--vt-c-divider-light-2);
+  --color-border-hover: var(--vt-c-divider-light-1);
+
+  --color-heading: var(--vt-c-primary-dark);
+  --color-text: var(--vt-c-text-light-1);
+
+  --section-gap: 160px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: var(--vt-c-black);
+    --color-background-soft: var(--vt-c-black-soft);
+    --color-background-mute: var(--vt-c-black-mute);
+
+    --color-primary: var(--vt-c-primary-light);
+    --color-primary-light: var(--vt-c-primary-lightest);
+    --color-primary-dark: var(--vt-c-primary);
+    --color-primary-darker: var(--vt-c-primary-dark);
+    --color-primary-lightest: var(--vt-c-primary-light);
+
+    --color-border: var(--vt-c-divider-dark-2);
+    --color-border-hover: var(--vt-c-divider-dark-1);
+
+    --color-heading: var(--vt-c-text-dark-1);
+    --color-text: var(--vt-c-text-dark-2);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  font-weight: normal;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--color-text);
+  background: var(--color-background);
+  transition:
+    color 0.5s,
+    background-color 0.5s;
+  line-height: 1.6;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
+  font-size: 15px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Classes utilitárias para a paleta de cores personalizada */
+
+/* Cores primárias */
+.bg-primary { background-color: var(--color-primary) !important; }
+.bg-primary-light { background-color: var(--color-primary-light) !important; }
+.bg-primary-dark { background-color: var(--color-primary-dark) !important; }
+.bg-primary-darker { background-color: var(--color-primary-darker) !important; }
+.bg-primary-lightest { background-color: var(--color-primary-lightest) !important; }
+
+.text-primary { color: var(--color-primary) !important; }
+.text-primary-light { color: var(--color-primary-light) !important; }
+.text-primary-dark { color: var(--color-primary-dark) !important; }
+.text-primary-darker { color: var(--color-primary-darker) !important; }
+.text-primary-lightest { color: var(--color-primary-lightest) !important; }
+
+.border-primary { border-color: var(--color-primary) !important; }
+.border-primary-light { border-color: var(--color-primary-light) !important; }
+.border-primary-dark { border-color: var(--color-primary-dark) !important; }
+
+/* Botões com a paleta de cores */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  border: 1px solid var(--color-primary);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+}
+
+.btn-outline-primary {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+/* Cards e containers */
+.card-primary {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-primary-lightest);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(83, 97, 115, 0.1);
+}
+
+/* Gradientes */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+}
+
+.gradient-primary-light {
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 100%);
+}
+
+/* Estilos específicos para home */
+.home-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: white;
+}
+
+.header {
+  text-align: center;
+  padding: 2rem 1rem;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.header p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+.scan-button {
+  background: var(--color-primary-light);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.scan-button:hover:not(:disabled) {
+  background: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.scan-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.networks-section h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.network-item {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.network-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.network-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.3rem;
+  color: #fff;
+}
+
+.network-info p {
+  margin: 0.25rem 0;
+  opacity: 0.8;
+}
+
+.configure-btn {
+  background: var(--color-primary-dark);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.configure-btn:hover {
+  background: var(--color-primary-darker);
+  transform: scale(1.05);
+}
+
+/* Device Config Styles */
+.device-config-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: white;
+  padding: 20px;
+}
+
+.device-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 2rem;
+}
+
+.device-card h2 {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-primary-light);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: white;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary-light);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.submit-button {
+  width: 100%;
+  background: var(--color-primary-light);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: var(--color-primary);
+  transform: translateY(-2px);
+}
+
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.reset-button {
+  background: var(--color-primary-dark);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.reset-button:hover {
+  background: var(--color-primary-darker);
+  transform: scale(1.05);
+}
+
+/* Cor dos options dos combos para ficarem visíveis */
+select.form-input option {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
+select.form-input {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
+/* Garantir que os options sejam visíveis em todos os combos */
+select option {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
+/* Estilos para combos específicos */
+select {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
+select option:checked {
+  background-color: var(--color-primary-lightest) !important;
+  color: #000000 !important;
+}
+
+select option:hover {
+  background-color: var(--color-primary-lightest) !important;
+  color: #000000 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .device-card {
+    padding: 1.5rem;
+  }
+}

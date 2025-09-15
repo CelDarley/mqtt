@@ -1,0 +1,58 @@
+# Logs
+*.log
+logs/
+storage/logs/
+
+# Cache
+cache/
+storage/cache/
+storage/framework/cache/
+bootstrap/cache/
+
+# Sessions
+storage/framework/sessions/
+
+# Vendor
+vendor/
+node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Database
+*.sqlite
+*.db
+
+# Compiled files
+*.compiled
+
+# Private keys
+*.pem
+*.key
+privada
+
+# Cookies for testing
+cookies.txt
+
+# Debug files
+debug_*
+*_debug.html
+departments_create_debug.html 

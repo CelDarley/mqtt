@@ -1,0 +1,578 @@
+{
+	"info": {
+		"_postman_id": "mqtt-api-laravel-collection",
+		"name": "API MQTT Laravel - Coleção Completa",
+		"description": "Coleção completa para testar todos os endpoints da API MQTT Laravel",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345"
+	},
+	"item": [
+		{
+			"name": "🔍 GET - Listar Tópicos",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/mqtt/topics",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"mqtt",
+						"topics"
+					]
+				}
+			},
+			"response": [],
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.eql(true);",
+							"});",
+							"",
+							"pm.test(\"Response has data array\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		},
+		{
+			"name": "➕ POST - Criar Tópico",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"{{unique_topic_name}}\",\n    \"description\": \"Tópico de teste criado via Postman\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/mqtt/topics",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"mqtt",
+						"topics"
+					]
+				}
+			},
+			"response": [],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Gerar nome único para o tópico",
+							"var timestamp = new Date().getTime();",
+							"var topicName = \"teste/\" + timestamp;",
+							"pm.environment.set(\"unique_topic_name\", topicName);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Tópico criado com sucesso\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.eql(true);",
+							"    pm.expect(jsonData.message).to.include(\"criado com sucesso\");",
+							"});",
+							"",
+							"pm.test(\"Tópico tem ID\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data.id).to.be.a('number');",
+							"});",
+							"",
+							"// Salvar ID para uso posterior",
+							"if (pm.response.json().success) {",
+							"    pm.environment.set(\"last_topic_id\", pm.response.json().data.id);",
+							"    pm.environment.set(\"last_topic_name\", pm.response.json().data.name);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		},
+		{
+			"name": "📤 POST - Enviar Mensagem",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"topico\": \"{{last_topic_name}}\",\n    \"mensagem\": \"Teste de mensagem via Postman - {{$timestamp}}\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/mqtt/send-message",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"mqtt",
+						"send-message"
+					]
+				}
+			},
+			"response": [],
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Mensagem enviada com sucesso\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.eql(true);",
+							"    pm.expect(jsonData.message).to.include(\"enviada com sucesso\");",
+							"});",
+							"",
+							"pm.test(\"Resposta contém dados da mensagem\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.have.property('topic');",
+							"    pm.expect(jsonData.data).to.have.property('message');",
+							"    pm.expect(jsonData.data).to.have.property('timestamp');",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		},
+		{
+			"name": "🔍 GET - Obter Tópico por ID",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/mqtt/topics/{{last_topic_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"mqtt",
+						"topics",
+						"{{last_topic_id}}"
+					]
+				}
+			},
+			"response": [],
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Tópico encontrado\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.eql(true);",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data.id).to.eql(parseInt(pm.environment.get(\"last_topic_id\")));",
+							"});",
+							"",
+							"pm.test(\"Tópico tem todos os campos\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.have.property('name');",
+							"    pm.expect(jsonData.data).to.have.property('description');",
+							"    pm.expect(jsonData.data).to.have.property('created_at');",
+							"    pm.expect(jsonData.data).to.have.property('updated_at');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		},
+		{
+			"name": "✏️ PUT - Atualizar Tópico",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"{{last_topic_name}}/atualizado\",\n    \"description\": \"Descrição atualizada via Postman - {{$timestamp}}\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/mqtt/topics/{{last_topic_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"mqtt",
+						"topics",
+						"{{last_topic_id}}"
+					]
+				}
+			},
+			"response": [],
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Tópico atualizado com sucesso\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.eql(true);",
+							"    pm.expect(jsonData.message).to.include(\"atualizado com sucesso\");",
+							"});",
+							"",
+							"pm.test(\"Dados foram atualizados\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.name).to.include(\"atualizado\");",
+							"    pm.expect(jsonData.data.description).to.include(\"atualizada\");",
+							"});",
+							"",
+							"// Atualizar nome do tópico no ambiente",
+							"if (pm.response.json().success) {",
+							"    pm.environment.set(\"last_topic_name\", pm.response.json().data.name);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		},
+		{
+			"name": "🗑️ DELETE - Deletar Tópico",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/mqtt/topics/{{last_topic_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"mqtt",
+						"topics",
+						"{{last_topic_id}}"
+					]
+				}
+			},
+			"response": [],
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Tópico deletado com sucesso\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.eql(true);",
+							"    pm.expect(jsonData.message).to.include(\"deletado com sucesso\");",
+							"});",
+							"",
+							"// Limpar variáveis de ambiente",
+							"pm.environment.unset(\"last_topic_id\");",
+							"pm.environment.unset(\"last_topic_name\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		},
+		{
+			"name": "🧪 Teste de Validação - Tópico sem Nome",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"description\": \"Tópico sem nome para teste de validação\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/mqtt/topics",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"mqtt",
+						"topics"
+					]
+				}
+			},
+			"response": [],
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422 (Validation Error)\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Erro de validação retornado\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.eql(false);",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"    pm.expect(jsonData.errors).to.have.property('name');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		},
+		{
+			"name": "🧪 Teste de Erro - Tópico Inexistente",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/mqtt/topics/999999",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"mqtt",
+						"topics",
+						"999999"
+					]
+				}
+			},
+			"response": [],
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404 (Not Found)\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Erro de não encontrado\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.eql(false);",
+							"    pm.expect(jsonData.message).to.include(\"não encontrado\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		},
+		{
+			"name": "🧪 Teste de Mensagem - Tópico Inexistente",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"topico\": \"topico/inexistente\",\n    \"mensagem\": \"Mensagem para tópico que não existe\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/mqtt/send-message",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"mqtt",
+						"send-message"
+					]
+				}
+			},
+			"response": [],
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404 (Not Found)\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Erro de tópico não encontrado\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.eql(false);",
+							"    pm.expect(jsonData.message).to.include(\"não encontrado\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Script global executado antes de cada request",
+					"console.log('Executando request para: ' + pm.request.url);"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Script global executado após cada response",
+					"console.log('Response status: ' + pm.response.status);",
+					"console.log('Response time: ' + pm.response.responseTime + 'ms');"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://10.100.0.200:8000",
+			"type": "string"
+		},
+		{
+			"key": "mqtt_server",
+			"value": "10.100.0.21",
+			"type": "string"
+		},
+		{
+			"key": "mqtt_port",
+			"value": "1883",
+			"type": "string"
+		},
+		{
+			"key": "mqtt_username",
+			"value": "darley",
+			"type": "string"
+		},
+		{
+			"key": "mqtt_password",
+			"value": "yhvh77",
+			"type": "string"
+		}
+	]
+} 
